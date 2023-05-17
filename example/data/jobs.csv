@@ -1,0 +1,12 @@
+person_id,company_id,role,salary,start_date
+1,2,Financial Analyst,65000,2022-01-15
+2,4,Management Consultant,80000,2021-09-01
+3,1,Software Engineer,90000,2023-02-28
+4,5,Store Manager,55000,2022-07-10
+5,3,Production Supervisor,60000,2021-12-05
+6,2,Marketing Specialist,70000,2022-03-18
+7,1,Data Scientist,100000,2023-04-22
+8,5,Sales Associate,45000,2022-06-09
+9,4,Project Manager,95000,2022-02-10
+10,3,Quality Control Technician,50000,2021-11-15
+11,1,UX Designer,85000,2023-03-10

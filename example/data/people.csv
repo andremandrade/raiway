@@ -1,0 +1,12 @@
+ID,name,birthday,gender,email,phone
+1,John Smith,1985-07-12,M,john.smith@example.com,555-1234
+2,Emily Johnson,1990-02-28,F,emily.johnson@example.com,555-5678
+3,Michael Williams,1978-11-05,M,michael.williams@example.com,555-4321
+4,Sarah Davis,1995-09-18,F,sarah.davis@example.com,555-8765
+5,David Brown,1982-04-23,M,david.brown@example.com,555-9876
+6,Jennifer Taylor,1992-06-30,F,jennifer.taylor@example.com,555-2345
+7,Christopher Martinez,1989-12-07,M,christopher.martinez@example.com,555-7654
+8,Jessica Anderson,1987-03-14,F,jessica.anderson@example.com,555-3456
+9,Matthew Thompson,1998-08-25,M,matthew.thompson@example.com,555-6543
+10,Amanda Wilson,1993-01-09,F,amanda.wilson@example.com,555-7890
+11,Brian Johnson,1980-05-03,M,brian.johnson@example.com,555-9087

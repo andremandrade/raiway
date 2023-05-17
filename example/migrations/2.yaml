@@ -1,0 +1,26 @@
+- type: load-csv
+  filePath: data/people.csv
+  modelName: people_csv
+  scheme: # map
+    birthday: Date
+
+- name: Load people model # optional - this information goes to log
+  type: load-models
+  files: 
+  - rel/model/people.rel
+  prefix: myapp
+
+- type: delete-models
+  models:
+  - people
+
+- type: enable-ics
+
+- type: disable-ics
+
+- type: update
+  query: | # inline query
+    def insert:jobs = loaded_jobs
+
+- type: update
+  filePath: example/rel/update/create-system-user.rel

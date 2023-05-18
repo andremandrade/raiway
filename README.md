@@ -18,6 +18,17 @@ Database migration tool for RAI databases
 
 ## Migration script
 
+A migration script is a YAML file with an array of `Operation` in the root.
+
+The properties of an `Operation` depends on the `type` property that defines the REL operation to be executed. The supported operations are:
+
+* `load-csv`: Load a CSV file from a local file to a REL model
+* `load-models`: Load local files as REL nodels
+* `delete-models`: Delete existing models
+* `update`: Execute queries in `read-only=false` mode  from a local file or an inline query
+* `disable-ics`: Disable integrity constraints
+* `enable-ics`: Enable integrity constraints
+
 ### Example of a migration script
 
 ```yaml

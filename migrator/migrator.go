@@ -7,7 +7,7 @@ import (
 )
 
 var allMigrationScripts map[int]MigrationScript
-var currentMigrationStatus MigrationStatus
+var currentMigrationStatus *MigrationStatus
 
 func Setup(profile, database, engine, migrationsPath string) (*MigrationStatus, error) {
 
@@ -29,7 +29,7 @@ func Setup(profile, database, engine, migrationsPath string) (*MigrationStatus, 
 	if err != nil {
 		return nil, fmt.Errorf("setup: %w", err)
 	}
-	currentMigrationStatus = *migrationStatus
+	currentMigrationStatus = migrationStatus
 	return migrationStatus, nil
 }
 
@@ -39,14 +39,16 @@ func GetLocalMigrationScripts() map[int]MigrationScript {
 
 func Migrate() error {
 	fmt.Println("= Starting migration...")
-	for mig_id, migrationScript := range currentMigrationStatus.NextMigrations {
-		fmt.Println("  * Migration script - ID #", mig_id, " initiated...")
+	for mig_id, migrationScript := range *currentMigrationStatus.NextMigrations {
+		fmt.Println("  * Migration script #", mig_id, " initiated...")
 		for opId, op := range migrationScript {
-			fmt.Println("     * Operation #", opId, " - ", op.Type)
+			fmt.Println("     * Operation #", opId, " - ", op.Type, op.Name)
 			execErr := Execute(op)
 			if execErr != nil {
+				fmt.Print("        ")
 				fmt.Println(":Migrate: Operation execution failed: ", execErr)
 			} else {
+				fmt.Print("        ")
 				fmt.Println(":Migrate: Operation execution succeeded")
 			}
 		}

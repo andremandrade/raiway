@@ -25,7 +25,7 @@ func main() {
 	fmt.Println("\n=== Migration Status ===")
 	fmt.Println(" - Current migration: ", migrationStatus.CurrentMigrationId)
 	fmt.Println(" - Needed migrations:")
-	for id := range migrationStatus.NextMigrations {
+	for id := range *migrationStatus.NextMigrations {
 		fmt.Println("   - ", id)
 	}
 

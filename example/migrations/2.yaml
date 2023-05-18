@@ -1,19 +1,16 @@
-- type: load-csv
-  filePath: data/people.csv
-  modelName: people_csv
-  scheme: # map
-    birthday: Date
+- name: Deleting models to move to entities folder
+  type: delete-models
+  models:
+  - example/person
+  - example/company
 
-- name: Load people model # optional - this information goes to log
+- name: Re-creating entities models into entity folder
   type: load-models
   files: 
-  - rel/model/people.rel
-  prefix: myapp
-
-- type: delete-models
-  models:
-  - people
-
+  - example/rel/model/person.rel
+  - example/rel/model/company.rel
+  prefix: example/entities
+  
 - type: enable-ics
 
 - type: disable-ics

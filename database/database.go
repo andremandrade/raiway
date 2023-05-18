@@ -3,7 +3,9 @@ package database
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"strings"
 
 	"github.com/relationalai/rai-sdk-go/rai"
 )
@@ -35,11 +37,11 @@ func Query(query string) (*rai.TransactionAsyncResult, error) {
 	return result, nil
 }
 
-func LoadCsv(relation, fileLocation, delimiter, quotechar, escapechar string, csvSchema map[string]string) error {
+func LoadCsv(relation, filePath, delimiter, quotechar, escapechar string, csvSchema map[string]string) error {
 
-	file, fileReadError := ioutil.ReadFile(fileLocation)
+	file, fileReadError := ioutil.ReadFile(filePath)
 	if fileReadError != nil {
-		return fmt.Errorf(":fileReadError:%w", fileReadError)
+		return fmt.Errorf(":LoadCsv:fileReadError:%w", fileReadError)
 	}
 
 	ioReader := bytes.NewReader(file)
@@ -62,12 +64,53 @@ func LoadCsv(relation, fileLocation, delimiter, quotechar, escapechar string, cs
 	tranx, loadCsvError := raiClient.LoadCSV(database, engine, relation, ioReader, &csvOpts)
 
 	if loadCsvError != nil {
-		return fmt.Errorf(":loadCsv:raiClient.LoadCSV")
+		return fmt.Errorf(":LoadCsv:raiClient.LoadCSV:%w", loadCsvError)
 	}
 
 	tranxError := checkTransactionSuccess(tranx)
 	if tranxError != nil {
-		return fmt.Errorf(":loadCsv%w", tranxError)
+		return fmt.Errorf(":LoadCsv%w", tranxError)
+	}
+	return nil
+}
+
+func LoadModels(prefix string, files []string) error {
+	filesIoReaders := make(map[string]io.Reader)
+	for _, filePath := range files {
+		file, fileReadError := ioutil.ReadFile(filePath)
+		if fileReadError != nil {
+			return fmt.Errorf(":LoadModels:fileReadError:%w", fileReadError)
+		}
+
+		ioReader := bytes.NewReader(file)
+		splittedFilePath := strings.Split(filePath, "/")
+		modelName := strings.TrimSuffix(fmt.Sprint(prefix, "/", splittedFilePath[len(splittedFilePath)-1]), ".rel")
+		filesIoReaders[modelName] = ioReader
+	}
+
+	tranx, loadModelsError := raiClient.LoadModels(database, engine, filesIoReaders)
+
+	if loadModelsError != nil {
+		return fmt.Errorf(":LoadModels:raiClient.LoadModels:%w", loadModelsError)
+	}
+
+	tranxError := checkTransactionSuccess(tranx)
+	if tranxError != nil {
+		return fmt.Errorf(":LoadModels%w", tranxError)
+	}
+	return nil
+}
+
+func DeleteModels(models []string) error {
+	tranx, loadModelsError := raiClient.DeleteModels(database, engine, models)
+
+	if loadModelsError != nil {
+		return fmt.Errorf(":DeleteModels:raiClient.LoadModels:%w", loadModelsError)
+	}
+
+	tranxError := checkTransactionSuccess(tranx)
+	if tranxError != nil {
+		return fmt.Errorf(":DeleteModels%w", tranxError)
 	}
 	return nil
 }

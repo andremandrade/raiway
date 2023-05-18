@@ -22,6 +22,8 @@ type MigrationOperation struct {
 	Files []string `yaml:"files,omitempty"`
 	// load-models
 	Prefix string `yaml:"prefix,omitempty"`
+	// load-models
+	Models []string `yaml:"models,omitempty"`
 	// update
 	Query string `yaml:"query,omitempty"`
 }
@@ -46,7 +48,7 @@ const (
 
 func validateLoadCSV(op MigrationOperation) error {
 	if op.Type != LoadCsv {
-		return fmt.Errorf(":validateLoadCSV: Invalid operation type")
+		return fmt.Errorf(":validateLoadCSV: Operation type should be %s", LoadCsv)
 	}
 	if op.HostMode != Local && op.HostMode != Cloud {
 		return fmt.Errorf(":validateLoadCSV: Invalid hostMode")
@@ -54,5 +56,42 @@ func validateLoadCSV(op MigrationOperation) error {
 	if op.FilePath == "" || op.ModelName == "" {
 		return fmt.Errorf(":validateLoadCSV: Missing required property: filePath or modelName")
 	}
+	return nil
+}
+
+func validateLoadModels(op MigrationOperation) error {
+	if op.Type != LoadModels {
+		return fmt.Errorf(":validateLoadModels: Operation type should be %s", LoadModels)
+	}
+	if op.Files == nil || len(op.Files) == 0 {
+		return fmt.Errorf(":validateLoadModels: Missing required property: files")
+	}
+
+	for _, f := range op.Files {
+		if f == "" {
+			return fmt.Errorf(":validateLoadModels: files element can not be empty")
+		}
+	}
+
+	if op.Prefix == "" {
+		return fmt.Errorf(":validateLoadModels: Missing required property: prefix")
+	}
+	return nil
+}
+
+func validateDeleteModels(op MigrationOperation) error {
+	if op.Type != DeleteModels {
+		return fmt.Errorf(":validateDeleteModels: Operation type should be %s", DeleteModels)
+	}
+	if op.Models == nil || len(op.Models) == 0 {
+		return fmt.Errorf(":validateDeleteModels: Missing required property: models")
+	}
+
+	for _, m := range op.Models {
+		if m == "" {
+			return fmt.Errorf(":validateDeleteModels: models element can not be empty")
+		}
+	}
+
 	return nil
 }

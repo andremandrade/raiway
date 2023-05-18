@@ -9,7 +9,7 @@ import (
 
 type MigrationStatus struct {
 	CurrentMigrationId int
-	NextMigrations     map[int]MigrationScript
+	NextMigrations     *map[int]MigrationScript
 }
 
 func GetMigrationStatus(migrationScripts map[int]MigrationScript) (*MigrationStatus, error) {
@@ -20,7 +20,7 @@ func GetMigrationStatus(migrationScripts map[int]MigrationScript) (*MigrationSta
 
 	noMigrations := &MigrationStatus{
 		CurrentMigrationId: -1,
-		NextMigrations:     migrationScripts,
+		NextMigrations:     &migrationScripts,
 	}
 	if len(tranx.Problems) > 0 {
 		problems := tranx.Problems
@@ -52,7 +52,7 @@ func GetMigrationStatus(migrationScripts map[int]MigrationScript) (*MigrationSta
 
 	migrationStatus := MigrationStatus{
 		CurrentMigrationId: lastMigrationID,
-		NextMigrations:     nextMigrations,
+		NextMigrations:     &nextMigrations,
 	}
 
 	return &migrationStatus, nil

@@ -1,0 +1,9 @@
+entity type Person = Int
+
+def people = 
+    attr, person_hash, val : 
+    ^Person(people_csv:ID[row], person_hash) and 
+    people_csv(attr, row, val) 
+    from row
+
+def Person = first[people:ID]

@@ -1,0 +1,9 @@
+entity type Company = Int
+
+def companies = 
+    attr, company_hash, val : 
+    ^Company(company_csv:company_id[row], company_hash) and 
+    company_csv(attr, row, val) 
+    from row
+
+def Company = first[companies:company_id]

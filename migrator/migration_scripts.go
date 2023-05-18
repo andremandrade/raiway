@@ -10,33 +10,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type MigrationOperation string
-
-const (
-	LoadCsv      MigrationOperation = "load-csv"
-	LoadModels   MigrationOperation = "load-models"
-	DeleteModels MigrationOperation = "delete-models"
-	EnableICs    MigrationOperation = "enable-ics"
-	DisableICs   MigrationOperation = "disable-ics"
-	Update       MigrationOperation = "update"
-)
-
-type MigrationScript []struct {
-	//all
-	Type MigrationOperation `yaml:"type"`
-	// load-csv load-models update
-	FilePath string `yaml:"filePath,omitempty"`
-	// load-models
-	Scheme map[string]string `yaml:"scheme,omitempty"`
-	//all (optional)
-	Name string `yaml:"name,omitempty"`
-	// load-models
-	Files []string `yaml:"files,omitempty"`
-	// load-models
-	Prefix string `yaml:"prefix,omitempty"`
-	// update
-	Query string `yaml:"query,omitempty"`
-}
+type MigrationScript []MigrationOperation
 
 func LoadLocalMigrations(migrationsPath string) (map[int]MigrationScript, error) {
 
@@ -53,7 +27,7 @@ func LoadLocalMigrations(migrationsPath string) (map[int]MigrationScript, error)
 	for id, migrationFile := range migrationFiles {
 		migrationScript, createMigrationErr := createMigration(migrationsPath, migrationFile)
 		if createMigrationErr != nil {
-			return nil, fmt.Errorf("load local migrations:  %w", createMigrationErr)
+			return nil, fmt.Errorf(":Load local migrations%w", createMigrationErr)
 		}
 		migrationScripts[id] = migrationScript
 		fmt.Println(id, "|", migrationFile)
@@ -65,24 +39,23 @@ func LoadLocalMigrations(migrationsPath string) (map[int]MigrationScript, error)
 func createMigration(migrationsPath, migrationFile string) (MigrationScript, error) {
 	data, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", migrationsPath, migrationFile))
 	if err != nil {
-		fmt.Println(err)
-		return nil, err
+		return nil, fmt.Errorf(":createMigration:readFile:%w", err)
 	}
 
 	var migrationScript MigrationScript
 
 	err = yaml.Unmarshal(data, &migrationScript)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshalling migration file %s :  %w", migrationFile, err)
+		return nil, fmt.Errorf(":createMigration:unmarshalling migration file %s:%w", migrationFile, err)
 	}
 
 	return migrationScript, nil
 }
 
 func getMigrationFiles(migrationsPath string) (map[int]string, error) {
-	files, err := ioutil.ReadDir(migrationsPath)
-	if err != nil {
-		return nil, fmt.Errorf("read migrations dir %s :  %w", migrationsPath, err)
+	files, fileReadError := ioutil.ReadDir(migrationsPath)
+	if fileReadError != nil {
+		return nil, fmt.Errorf(":Read migrations dir %s%w", migrationsPath, fileReadError)
 	}
 
 	migrations := make(map[int]string)
@@ -91,11 +64,12 @@ func getMigrationFiles(migrationsPath string) (map[int]string, error) {
 		if !file.IsDir() {
 			if !strings.HasSuffix(file.Name(), DotYAML) {
 				fmt.Printf("WARNING - %s was ignored because '.yaml' extension was not found", file.Name())
+				continue
 			}
-			migrationNumber, convertErr := strconv.Atoi(strings.TrimSuffix(file.Name(), DotYAML))
+			migrationNumber, convertionErr := strconv.Atoi(strings.TrimSuffix(file.Name(), DotYAML))
 
-			if convertErr != nil {
-				return nil, fmt.Errorf("migration file name %s is not a number:  %w", file.Name(), err)
+			if convertionErr != nil {
+				return nil, fmt.Errorf(":Migration file name %s is not a number:  %w", file.Name(), fileReadError)
 			}
 			migrations[migrationNumber] = file.Name()
 		}

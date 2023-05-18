@@ -1,0 +1,7 @@
+- type: load-csv
+  hostMode: local
+  filePath: /home/andre/go/src/github.com/andremandrade/raiway/example/data/people.csv
+  modelName: people_csv
+# delimiter: '|'
+# quotechar: '~'
+# escapechar: '\'

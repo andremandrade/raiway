@@ -6,7 +6,8 @@ import (
 	raiDatabase "github.com/andremandrade/raiway/database"
 )
 
-var migrationScripts map[int]MigrationScript
+var allMigrationScripts map[int]MigrationScript
+var currentMigrationStatus MigrationStatus
 
 func Setup(profile, database, engine, migrationsPath string) (*MigrationStatus, error) {
 
@@ -22,16 +23,33 @@ func Setup(profile, database, engine, migrationsPath string) (*MigrationStatus, 
 	if err != nil {
 		return nil, fmt.Errorf("setup: %w", err)
 	}
-
+	allMigrationScripts = migrationScripts
 	migrationStatus, err := GetMigrationStatus(migrationScripts)
 
 	if err != nil {
 		return nil, fmt.Errorf("setup: %w", err)
 	}
-
+	currentMigrationStatus = *migrationStatus
 	return migrationStatus, nil
 }
 
+func GetLocalMigrationScripts() map[int]MigrationScript {
+	return allMigrationScripts
+}
+
 func Migrate() error {
+	fmt.Println("= Starting migration...")
+	for mig_id, migrationScript := range currentMigrationStatus.NextMigrations {
+		fmt.Println("  * Migration script - ID #", mig_id, " initiated...")
+		for opId, op := range migrationScript {
+			fmt.Println("     * Operation #", opId, " - ", op.Type)
+			execErr := Execute(op)
+			if execErr != nil {
+				fmt.Println(":Migrate: Operation execution failed: ", execErr)
+			} else {
+				fmt.Println(":Migrate: Operation execution succeeded")
+			}
+		}
+	}
 	return nil
 }

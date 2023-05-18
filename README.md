@@ -5,9 +5,11 @@ Database migration tool for RAI databases
 ## How to use
 
 * Build this project: `./build`
-* Create your migration script the a folder that you want
+* Create your migration script and add it to the folder that you prefer
   * Migration files should follow the standard `{migration_number}.yaml`, example:
-    * The `migration_number` is used to define the migrations sequence
+    * `1.yaml`
+    * `2.yaml`
+  * The `migration_number` is used to define the migrations sequence
 * Run `./raiway -p [PROFILE] -d [DATABASE] -e [ENGINE] -m [MIGRATIONS_FOLDER_PATH]`
 
 ## How does RAiway work

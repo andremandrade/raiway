@@ -2,24 +2,68 @@
 
 Database migration tool for RAI databases
 
+## How to use
+
+* Build this project: `./build`
+* Create your migration script the a folder that you want
+  * Migration files should follow the standard `{migration_number}.yaml`, example:
+    * The `migration_number` is used to define the migrations sequence
+* Run `./raiway -p [PROFILE] -d [DATABASE] -e [ENGINE] -m [MIGRATIONS_FOLDER_PATH]`
+
 ## How does RAiway work
 
 ![RAiway-Database-Migrator](https://github.com/andremandrade/raiway/assets/6182479/9d110c6f-15eb-4a70-b563-067d94bb7916)
 
 ## Migration script
 
-### YAML scheme descriptor
+### Example of a migration script
 
-* `script`: Root tag
-  * Value: array of `Operation`
+```yaml
+- type: load-csv
+  hostMode: local
+  filePath: example/data/people.csv
+  modelName: people_csv
+  delimiter: '|'
+  quotechar: '~'
+  escapechar: '\\'
+  scheme:
+    ID: int
 
-* `Operation`
-  * Properties:
-    * `type`: `string`
-      * Value:
-        * `load-csv`
-        * `load-models`
-        * `delete-models`
-        * `enable-ics`
-        * `disable-ics`
-        * `update`
+- type: load-csv
+  hostMode: local
+  filePath: example/data/company.csv
+  modelName: company_csv
+  scheme:
+    company_id: int
+
+- name: Entity models # optional - this information goes to log
+  type: load-models
+  files: 
+  - example/rel/model/person.rel
+  - example/rel/model/company.rel
+  prefix: example
+
+- name: Deleting models to move to entities folder
+  type: delete-models
+  models:
+  - example/person
+  - example/company
+
+- name: Re-creating entities models into entity folder
+  type: load-models
+  files: 
+  - example/rel/model/person.rel
+  - example/rel/model/company.rel
+  prefix: example/entities
+  
+- type: enable-ics
+
+- type: disable-ics
+
+- type: update
+  query: | # inline query
+    def insert:jobs = loaded_jobs
+
+- type: update
+  filePath: example/rel/update/create-system-user.rel
+```

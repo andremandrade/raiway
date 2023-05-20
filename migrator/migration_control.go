@@ -4,60 +4,52 @@ import (
 	"fmt"
 
 	raiDatabase "github.com/andremandrade/raiway/database"
-	"github.com/relationalai/rai-sdk-go/rai"
 )
 
 type MigrationStatus struct {
-	CurrentMigrationId int
-	NextMigrations     *map[int]MigrationScript
+	DatabaseVerion       int
+	InitFile             InitFile
+	RecommendedMigration MigrationFile
 }
 
-func GetMigrationStatus(migrationScripts map[int]MigrationScript) (*MigrationStatus, error) {
-	tranx, err := raiDatabase.Query(CurrentMigrationQuery)
+func GetMigrationStatus(initFile InitFile, migrationFiles []MigrationFile) (*MigrationStatus, error) {
+	tranx, err := raiDatabase.Query(GetDatabaseVersionQuery, false)
 	if err != nil {
-		return nil, fmt.Errorf("migrator.getMigrationStatus: %w", err)
+		return nil, fmt.Errorf("getMigrationStatus.GetDatabaseVersion: %w", err)
 	}
 
-	noMigrations := &MigrationStatus{
-		CurrentMigrationId: -1,
-		NextMigrations:     &migrationScripts,
-	}
 	if len(tranx.Problems) > 0 {
-		problems := tranx.Problems
-		for _, iProb := range problems {
-			problem, typeInferenceSucceed := iProb.(rai.ClientProblem)
-			if !typeInferenceSucceed {
-				return nil, fmt.Errorf("migrator.getMigrationStatus: type inference failed for rai.ClientProblem")
-			}
-			if typeInferenceSucceed && problem.ErrorCode == "UNDEFINED" {
-				return noMigrations, nil
-			} else {
-				return nil, fmt.Errorf("migrator.getMigrationStatus: unknown error - %v", problem)
-			}
-		}
+		return nil, fmt.Errorf(`getMigrationStatus: 
+			RAI transaction Results: %v
+			RAI transaction Problems: %v
+			- Expected raiway:db_version relation not found
+			- Run "raiway --init" to initialize a versioned database`, tranx.Results, tranx.Problems)
 	}
 
 	if len(tranx.Results) == 0 {
-		return noMigrations, nil
+		return nil, fmt.Errorf(`
+			- Expected raiway:db_version relation not found
+			- Run "raiway --init" to initialize a versioned database`)
 	}
 
-	lastMigrationID := int(tranx.Results[0].Table[0].(float64))
-	nextMigrations := make(map[int]MigrationScript)
-
-	for id, migrationScript := range migrationScripts {
-		if id > lastMigrationID {
-			nextMigrations[id] = migrationScript
-		}
-	}
+	databaseVersion := int(tranx.Results[0].Table[0].(float64))
 
 	migrationStatus := MigrationStatus{
-		CurrentMigrationId: lastMigrationID,
-		NextMigrations:     &nextMigrations,
+		DatabaseVerion: databaseVersion,
+		InitFile:       initFile,
 	}
 
+	for fileIndex := range migrationFiles {
+		migrationFile := migrationFiles[fileIndex]
+		if migrationFile.SourceVersion == databaseVersion &&
+			migrationFile.TargetVersion == initFile.Version {
+
+			migrationStatus.RecommendedMigration = migrationFile
+		}
+	}
 	return &migrationStatus, nil
 }
 
-const CurrentMigrationQuery = `//beginrel
-	def output = max[id: raiway_migrations(_, id, _)]
+const GetDatabaseVersionQuery = `//beginrel
+	def output = raiway:db_version
 //endrel`

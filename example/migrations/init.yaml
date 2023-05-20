@@ -1,0 +1,25 @@
+version: 1
+script:
+  - type: load-csv
+    hostMode: local
+    filePath: /home/andre/go/src/github.com/andremandrade/raiway/example/data/people.csv
+    modelName: people_csv
+  # delimiter: '|'
+  # quotechar: '~'
+  # escapechar: '\'
+    scheme:
+      ID: int
+
+  - type: load-csv
+    hostMode: local
+    filePath: /home/andre/go/src/github.com/andremandrade/raiway/example/data/company.csv
+    modelName: company_csv
+    scheme:
+      company_id: int
+
+  - name: Entity models # optional - this information goes to log
+    type: load-models
+    files: 
+    - /home/andre/go/src/github.com/andremandrade/raiway/example/rel/model/person.rel
+    - /home/andre/go/src/github.com/andremandrade/raiway/example/rel/model/company.rel
+    prefix: example

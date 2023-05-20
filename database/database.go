@@ -19,7 +19,7 @@ func Connect(profile string) error {
 	if connectionErr != nil {
 		return connectionErr
 	}
-	fmt.Println("RAI database connection stablished")
+
 	raiClient = *conn
 	return nil
 }
@@ -29,8 +29,8 @@ func SetDefaultDatabaseAndEngine(defDatabase, defEngine string) {
 	engine = defEngine
 }
 
-func Query(query string) (*rai.TransactionAsyncResult, error) {
-	result, err := raiClient.Execute(database, engine, query, nil, true)
+func Query(query string, readOnly bool) (*rai.TransactionAsyncResult, error) {
+	result, err := raiClient.Execute(database, engine, query, nil, readOnly)
 	if err != nil {
 		return nil, fmt.Errorf("database.query: %w", err)
 	}
@@ -113,6 +113,18 @@ func DeleteModels(models []string) error {
 		return fmt.Errorf(":DeleteModels%w", tranxError)
 	}
 	return nil
+}
+
+func GetBaseRelations() ([]string, error) {
+	edbs, raiError := raiClient.ListEDBs(database, engine)
+	if raiError != nil {
+		return nil, fmt.Errorf(":GetBaseRelations:%w", raiError)
+	}
+	baseRelations := []string{}
+	for _, edb := range edbs {
+		baseRelations = append(baseRelations, edb.Name)
+	}
+	return baseRelations, nil
 }
 
 func checkTransactionSuccess(tranx *rai.TransactionResult) error {

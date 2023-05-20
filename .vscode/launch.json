@@ -9,7 +9,15 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/main.go"
+            "program": "${workspaceFolder}/cmd/main.go",
+            "args": [
+                "-p", "PROFILE",
+                "-d", "DATABASE",
+                "-e", "ENGINE",
+                "-f", "MIGRATIONS_FOLDER",
+                "-i",
+                // "-m",
+            ]
         }
     ]
 }

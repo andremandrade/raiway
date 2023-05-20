@@ -14,7 +14,7 @@ Database migration tool for RAI databases
 
 ## How does RAiway work
 
-![RAiway-Database-Migrator](https://github.com/andremandrade/raiway/assets/6182479/9d110c6f-15eb-4a70-b563-067d94bb7916)
+![RAiway-Database-Migrator](https://github.com/andremandrade/raiway/assets/6182479/5f98e321-a544-4a1d-95aa-c71d9188201f)
 
 ## Migration script
 

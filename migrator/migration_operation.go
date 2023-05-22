@@ -95,3 +95,13 @@ func validateDeleteModels(op MigrationOperation) error {
 
 	return nil
 }
+
+func validateUpdate(op MigrationOperation) error {
+	if op.Type != Update {
+		return fmt.Errorf(":validateUpdate: Operation type should be %s", Update)
+	}
+	if op.FilePath == "" && op.Query == "" {
+		return fmt.Errorf(":validateUpdate: Missing required property: filePath or query")
+	}
+	return nil
+}

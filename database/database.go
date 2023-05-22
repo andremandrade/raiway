@@ -30,18 +30,39 @@ func SetDefaultDatabaseAndEngine(defDatabase, defEngine string) {
 }
 
 func Query(query string, readOnly bool) (*rai.TransactionAsyncResult, error) {
-	result, err := raiClient.Execute(database, engine, query, nil, readOnly)
+	tranx, err := raiClient.Execute(database, engine, query, nil, readOnly)
 	if err != nil {
-		return nil, fmt.Errorf("database.query: %w", err)
+		return nil, fmt.Errorf(":database.Query: %w", err)
 	}
-	return result, nil
+	tranxError := checkTransactionAsyncSuccess(tranx)
+	if tranxError != nil {
+		return tranx, fmt.Errorf(":Query%w", tranxError)
+	}
+	return tranx, nil
+}
+
+func QueryFromFile(filePath string, readOnly bool) (*rai.TransactionAsyncResult, error) {
+	file, fileReadError := ioutil.ReadFile(filePath)
+	if fileReadError != nil {
+		return nil, fmt.Errorf(":database.QueryFromFile:fileReadError:%w", fileReadError)
+	}
+
+	tranx, err := raiClient.Execute(database, engine, string(file), nil, readOnly)
+	if err != nil {
+		return nil, fmt.Errorf(":database.Query: %w", err)
+	}
+	tranxError := checkTransactionAsyncSuccess(tranx)
+	if tranxError != nil {
+		return tranx, fmt.Errorf(":Query%w", tranxError)
+	}
+	return tranx, nil
 }
 
 func LoadCsv(relation, filePath, delimiter, quotechar, escapechar string, csvSchema map[string]string) error {
 
 	file, fileReadError := ioutil.ReadFile(filePath)
 	if fileReadError != nil {
-		return fmt.Errorf(":LoadCsv:fileReadError:%w", fileReadError)
+		return fmt.Errorf(":database.LoadCsv:fileReadError:%w", fileReadError)
 	}
 
 	ioReader := bytes.NewReader(file)
@@ -64,12 +85,12 @@ func LoadCsv(relation, filePath, delimiter, quotechar, escapechar string, csvSch
 	tranx, loadCsvError := raiClient.LoadCSV(database, engine, relation, ioReader, &csvOpts)
 
 	if loadCsvError != nil {
-		return fmt.Errorf(":LoadCsv:raiClient.LoadCSV:%w", loadCsvError)
+		return fmt.Errorf(":database.LoadCsv:raiClient.LoadCSV:%w", loadCsvError)
 	}
 
 	tranxError := checkTransactionSuccess(tranx)
 	if tranxError != nil {
-		return fmt.Errorf(":LoadCsv%w", tranxError)
+		return fmt.Errorf(":database.LoadCsv%w", tranxError)
 	}
 	return nil
 }
@@ -79,7 +100,7 @@ func LoadModels(prefix string, files []string) error {
 	for _, filePath := range files {
 		file, fileReadError := ioutil.ReadFile(filePath)
 		if fileReadError != nil {
-			return fmt.Errorf(":LoadModels:fileReadError:%w", fileReadError)
+			return fmt.Errorf(":database.LoadModels:fileReadError:%w", fileReadError)
 		}
 
 		ioReader := bytes.NewReader(file)
@@ -91,12 +112,12 @@ func LoadModels(prefix string, files []string) error {
 	tranx, loadModelsError := raiClient.LoadModels(database, engine, filesIoReaders)
 
 	if loadModelsError != nil {
-		return fmt.Errorf(":LoadModels:raiClient.LoadModels:%w", loadModelsError)
+		return fmt.Errorf(":database.LoadModels:raiClient.LoadModels:%w", loadModelsError)
 	}
 
 	tranxError := checkTransactionSuccess(tranx)
 	if tranxError != nil {
-		return fmt.Errorf(":LoadModels%w", tranxError)
+		return fmt.Errorf(":database.LoadModels%w", tranxError)
 	}
 	return nil
 }
@@ -105,12 +126,12 @@ func DeleteModels(models []string) error {
 	tranx, loadModelsError := raiClient.DeleteModels(database, engine, models)
 
 	if loadModelsError != nil {
-		return fmt.Errorf(":DeleteModels:raiClient.LoadModels:%w", loadModelsError)
+		return fmt.Errorf(":database.DeleteModels:raiClient.LoadModels:%w", loadModelsError)
 	}
 
 	tranxError := checkTransactionSuccess(tranx)
 	if tranxError != nil {
-		return fmt.Errorf(":DeleteModels%w", tranxError)
+		return fmt.Errorf(":database.DeleteModels%w", tranxError)
 	}
 	return nil
 }
@@ -118,7 +139,7 @@ func DeleteModels(models []string) error {
 func GetBaseRelations() ([]string, error) {
 	edbs, raiError := raiClient.ListEDBs(database, engine)
 	if raiError != nil {
-		return nil, fmt.Errorf(":GetBaseRelations:%w", raiError)
+		return nil, fmt.Errorf(":database.GetBaseRelations:%w", raiError)
 	}
 	baseRelations := []string{}
 	for _, edb := range edbs {
@@ -133,6 +154,13 @@ func checkTransactionSuccess(tranx *rai.TransactionResult) error {
 	}
 	if len(tranx.Problems) > 0 {
 		return fmt.Errorf(":checkTransactionSucces: has problems %v", tranx.Problems)
+	}
+	return nil
+}
+
+func checkTransactionAsyncSuccess(tranx *rai.TransactionAsyncResult) error {
+	if len(tranx.Problems) > 0 {
+		return fmt.Errorf(":checkTransactionAsyncSuccess: has problems %v", tranx.Problems)
 	}
 	return nil
 }

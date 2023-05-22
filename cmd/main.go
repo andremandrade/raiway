@@ -37,7 +37,6 @@ func main() {
 	flag.BoolVar(&migrate, "migrate", false, "Search and apply a migration if it exists")
 
 	flag.Parse()
-	// fmt.Println(init, migrate, profile, database, engine, migrationsPath)
 
 	initFile, migrationFiles, setupErr := migrator.Setup(profile, database, engine, migrationsPath)
 
@@ -57,6 +56,7 @@ func main() {
 		}
 		executeOptionsError := executeOptions(init, migrate, *initFile, migrationFiles)
 		if executeOptionsError != nil {
+			fmt.Println(fmt.Errorf("[ERROR] User options can not be executed%w", executeOptionsError))
 			return
 		}
 	}
@@ -67,11 +67,21 @@ func executeOptions(init, migrate bool, initFile migrator.InitFile, migrationFil
 		if migrate {
 			fmt.Println("[warning] Argument --migrate is ignored because can't be used with --init")
 		}
+		fmt.Println("[Init]")
 		execInitError := migrator.ExecuteInit(initFile)
 		if execInitError != nil {
-			return execInitError
+			return fmt.Errorf(":executeOptions%w", execInitError)
 		}
-		fmt.Println("[Init] Database was successfully setup to the version", initFile.Version)
+		fmt.Println("  Initialization finished")
+		return nil
+	}
+	if migrate {
+		fmt.Println("[Migrate]")
+		execMigrationError := migrator.ExecuteMigration(initFile, migrationFiles)
+		if execMigrationError != nil {
+			return fmt.Errorf(":executeOptions%w", execMigrationError)
+		}
+		fmt.Println("  Migration finished!")
 	}
 	return nil
 }

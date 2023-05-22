@@ -1,0 +1,3 @@
+def admin_username = "admin"
+def admin_user = (:username, ^User[admin_username], admin_username)
+def insert[:users] = admin_user

@@ -27,6 +27,12 @@ func Execute(operation MigrationOperation) error {
 			return fmt.Errorf(":Execute%w", opExecError)
 		}
 		return nil
+	case Update:
+		opExecError := executeUpdate(operation)
+		if opExecError != nil {
+			return fmt.Errorf(":Execute%w", opExecError)
+		}
+		return nil
 	default:
 		return fmt.Errorf(":Execute: Operation is not suported or is not implemented yet: %v", operation)
 	}
@@ -68,6 +74,26 @@ func executeDeleteModels(operation MigrationOperation) error {
 	deleteModelsError := database.DeleteModels(operation.Models)
 	if deleteModelsError != nil {
 		return fmt.Errorf(":executeDeleteModels%w", deleteModelsError)
+	}
+	return nil
+}
+
+func executeUpdate(operation MigrationOperation) error {
+	validationError := validateUpdate(operation)
+	if validationError != nil {
+		return fmt.Errorf(":executeUpdate%w", validationError)
+	}
+
+	if operation.Query != "" {
+		_, updateError := database.Query(operation.Query, false)
+		if updateError != nil {
+			return fmt.Errorf(":executeUpdateInline%w", updateError)
+		}
+	} else if operation.FilePath != "" {
+		_, updateError := database.QueryFromFile(operation.FilePath, false)
+		if updateError != nil {
+			return fmt.Errorf(":executeUpdateFromFile%w", updateError)
+		}
 	}
 	return nil
 }

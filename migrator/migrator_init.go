@@ -14,11 +14,13 @@ def insert:raiway = :db_version, %d
 //endrel`
 
 func ExecuteInit(initFile InitFile) error {
-	for _, operation := range initFile.Script {
+	fmt.Println("  Database is going to be initilized with version", initFile.Version)
+	for id, operation := range initFile.Script {
 		execError := Execute(operation)
 		if execError != nil {
 			return fmt.Errorf(":ExecInit%w", execError)
 		}
+		fmt.Println("  ✓ ", id, "- Successfully executed ", operation.Type, operation.Name)
 	}
 	updateDatabaseVersion(initFile.Version)
 	return nil

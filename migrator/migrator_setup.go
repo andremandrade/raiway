@@ -39,7 +39,7 @@ func CheckMigrationStatus() (*MigrationStatus, error) {
 	migrationStatus, migrationStatusError := GetMigrationStatus(*currentInitFile, allMigrations)
 
 	if migrationStatusError != nil {
-		return nil, fmt.Errorf("setup: %w", migrationStatusError)
+		return nil, fmt.Errorf("CheckMigrationStatus: %w", migrationStatusError)
 	}
 	currentMigrationStatus = migrationStatus
 	return migrationStatus, nil
@@ -49,21 +49,6 @@ func GetLocalMigrationScripts() []MigrationFile {
 	return allMigrations
 }
 
-func Migrate() error {
-	// fmt.Println("= Starting migration...")
-	// for mig_id, migrationScript := range *currentMigrationStatus.NextMigrations {
-	// 	fmt.Println("  * Migration script #", mig_id, " initiated...")
-	// 	for opId, op := range migrationScript {
-	// 		fmt.Println("     * Operation #", opId, " - ", op.Type, op.Name)
-	// 		execErr := Execute(op)
-	// 		if execErr != nil {
-	// 			fmt.Print("        ")
-	// 			fmt.Println(":Migrate: Operation execution failed: ", execErr)
-	// 		} else {
-	// 			fmt.Print("        ")
-	// 			fmt.Println(":Migrate: Operation execution succeeded")
-	// 		}
-	// 	}
-	// }
-	return nil
+func GetCurrentMigrationStatus() MigrationStatus {
+	return *currentMigrationStatus
 }
